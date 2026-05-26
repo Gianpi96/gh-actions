@@ -61,11 +61,6 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-asyncio pytest-cov coverage[toml]
 
-      - name: Wait for services to be healthy
-        run: |
-          until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done
-          until redis-cli -h localhost ping; do sleep 1; done
-
       - name: Run Alembic migrations
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:1234@localhost:5432/testdb
