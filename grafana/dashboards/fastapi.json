@@ -1,0 +1,111 @@
+{
+  "annotations": {"list": []},
+  "description": "FastAPI — request rate, latency, errors, WebSocket, Groq API",
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h":1,"w":24,"x":0,"y":0},
+      "id": 100, "title": "HTTP Overview", "type": "row"
+    },
+    {
+      "datasource": {"type":"prometheus","uid":"prometheus"},
+      "fieldConfig": {"defaults": {"unit":"reqps","color":{"mode":"thresholds"},
+        "thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":50},{"color":"red","value":200}]}}},
+      "gridPos": {"h":4,"w":4,"x":0,"y":1}, "id": 1,
+      "options": {"reduceOptions":{"calcs":["lastNotNull"]},"colorMode":"background","textMode":"auto"},
+      "title": "Request Rate (req/s)", "type": "stat",
+      "targets": [{"expr":"sum(rate(fastapi_requests_total[1m]))","legendFormat":"req/s","refId":"A","datasource":{"type":"prometheus","uid":"prometheus"}}]
+    },
+    {
+      "datasource": {"type":"prometheus","uid":"prometheus"},
+      "fieldConfig": {"defaults": {"unit":"percent","max":100,"min":0,"color":{"mode":"thresholds"},
+        "thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":1},{"color":"red","value":5}]}}},
+      "gridPos": {"h":4,"w":4,"x":4,"y":1}, "id": 2,
+      "options": {"reduceOptions":{"calcs":["lastNotNull"]},"colorMode":"background","textMode":"auto"},
+      "title": "HTTP 5xx Error Rate (%)", "type": "stat",
+      "targets": [{"expr":"100 * sum(rate(fastapi_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(fastapi_requests_total[5m]))","legendFormat":"5xx %","refId":"A","datasource":{"type":"prometheus","uid":"prometheus"}}]
+    },
+    {
+      "datasource": {"type":"prometheus","uid":"prometheus"},
+      "fieldConfig": {"defaults": {"unit":"none","color":{"mode":"thresholds"},
+        "thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":10},{"color":"red","value":50}]}}},
+      "gridPos": {"h":4,"w":4,"x":8,"y":1}, "id": 3,
+      "options": {"reduceOptions":{"calcs":["lastNotNull"]},"colorMode":"background","textMode":"auto"},
+      "title": "Requests In Progress", "type": "stat",
+      "targets": [{"expr":"sum(fastapi_requests_inprogress)","legendFormat":"in-flight","refId":"A","datasource":{"type":"prometheus","uid":"prometheus"}}]
+    },
+    {
+      "datasource": {"type":"prometheus","uid":"prometheus"},
+      "fieldConfig": {"defaults": {"unit":"none","color":{"mode":"thresholds"},
+        "thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":10},{"color":"red","value":100}]}}},
+      "gridPos": {"h":4,"w":4,"x":12,"y":1}, "id": 4,
+      "options": {"reduceOptions":{"calcs":["lastNotNull"]},"colorMode":"background","textMode":"auto"},
+      "title": "Active WebSocket Connections", "type": "stat",
+      "targets": [{"expr":"sum(websocket_connections_active)","legendFormat":"ws","refId":"A","datasource":{"type":"prometheus","uid":"prometheus"}}]
+    },
+    {
+      "datasource": {"type":"prometheus","uid":"prometheus"},
+      "fieldConfig": {"defaults": {"unit":"reqps","color":{"mode":"palette-classic"}}},
+      "gridPos": {"h":8,"w":12,"x":0,"y":5}, "id": 10,
+      "options": {"legend":{"calcs":["mean","max"],"displayMode":"table","placement":"bottom"},"tooltip":{"mode":"multi","sort":"desc"}},
+      "title": "Request Rate by Endpoint & Method", "type": "timeseries",
+      "targets": [{"expr":"sum by (handler, method) (rate(fastapi_requests_total[1m]))","legendFormat":"{{method}} {{handler}}","refId":"A","datasource":{"type":"prometheus","uid":"prometheus"}}]
+    },
+    {
+      "datasource": {"type":"prometheus","uid":"prometheus"},
+      "fieldConfig": {"defaults": {"unit":"s","color":{"mode":"palette-classic"}}},
+      "gridPos": {"h":8,"w":12,"x":12,"y":5}, "id": 11,
+      "options": {"legend":{"calcs":["mean","max"],"displayMode":"table","placement":"bottom"},"tooltip":{"mode":"multi","sort":"desc"}},
+      "title": "Latency p50 / p95 / p99 by Endpoint", "type": "timeseries",
+      "targets": [
+        {"expr":"histogram_quantile(0.50, sum by (le,handler)(rate(fastapi_http_request_duration_seconds_bucket[5m])))","legendFormat":"p50 {{handler}}","refId":"A","datasource":{"type":"prometheus","uid":"prometheus"}},
+        {"expr":"histogram_quantile(0.95, sum by (le,handler)(rate(fastapi_http_request_duration_seconds_bucket[5m])))","legendFormat":"p95 {{handler}}","refId":"B","datasource":{"type":"prometheus","uid":"prometheus"}},
+        {"expr":"histogram_quantile(0.99, sum by (le,handler)(rate(fastapi_http_request_duration_seconds_bucket[5m])))","legendFormat":"p99 {{handler}}","refId":"C","datasource":{"type":"prometheus","uid":"prometheus"}}
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h":1,"w":24,"x":0,"y":13},
+      "id": 101, "title": "Groq API", "type": "row"
+    },
+    {
+      "datasource": {"type":"prometheus","uid":"prometheus"},
+      "fieldConfig": {"defaults": {"unit":"reqps","color":{"mode":"palette-classic"}}},
+      "gridPos": {"h":7,"w":12,"x":0,"y":14}, "id": 20,
+      "options": {"legend":{"calcs":["mean","max"],"displayMode":"table","placement":"bottom"}},
+      "title": "Groq API Call Rate (by model / endpoint)", "type": "timeseries",
+      "targets": [{"expr":"sum by (model, endpoint)(rate(groq_api_calls_total[1m]))","legendFormat":"{{model}} · {{endpoint}}","refId":"A","datasource":{"type":"prometheus","uid":"prometheus"}}]
+    },
+    {
+      "datasource": {"type":"prometheus","uid":"prometheus"},
+      "fieldConfig": {"defaults": {"unit":"none","color":{"mode":"palette-classic"}}},
+      "gridPos": {"h":7,"w":12,"x":12,"y":14}, "id": 21,
+      "options": {"legend":{"calcs":["mean","max"],"displayMode":"table","placement":"bottom"}},
+      "title": "Groq Token Rate (prompt / completion)", "type": "timeseries",
+      "targets": [{"expr":"sum by (model, token_type)(rate(groq_tokens_total[1m]))","legendFormat":"{{model}} {{token_type}}","refId":"A","datasource":{"type":"prometheus","uid":"prometheus"}}]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h":1,"w":24,"x":0,"y":21},
+      "id": 102, "title": "Status Code Breakdown", "type": "row"
+    },
+    {
+      "datasource": {"type":"prometheus","uid":"prometheus"},
+      "fieldConfig": {"defaults": {"unit":"reqps","color":{"mode":"palette-classic"}}},
+      "gridPos": {"h":7,"w":24,"x":0,"y":22}, "id": 30,
+      "options": {"legend":{"calcs":["mean","max"],"displayMode":"table","placement":"right"},"tooltip":{"mode":"multi","sort":"desc"}},
+      "title": "Requests by Status Code", "type": "timeseries",
+      "targets": [{"expr":"sum by (status_code, handler)(rate(fastapi_requests_total[1m]))","legendFormat":"{{status_code}} {{handler}}","refId":"A","datasource":{"type":"prometheus","uid":"prometheus"}}]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["fastapi","python","prometheus"],
+  "time": {"from":"now-1h","to":"now"},
+  "timezone": "browser",
+  "title": "FastAPI — Application Dashboard",
+  "uid": "fastapi-main",
+  "version": 1
+}
