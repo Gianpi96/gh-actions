@@ -1,10 +1,12 @@
 # FastAPI Template
 
-![CI](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/test.yml/badge.svg)
+![CI](https://github.com/Gianpi96/gh-actions/actions/workflows/test.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-76%25-yellow)
 ![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue)
 
 Template riutilizzabile per FastAPI con osservabilità completa.
+
+*English summary: reusable FastAPI template with async PostgreSQL, Alembic migrations, Prometheus and Grafana observability, tests and CI. The documentation below is in Italian.*
 
 ## Stack
 
